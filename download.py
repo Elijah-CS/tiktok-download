@@ -12,6 +12,8 @@ feed_dir.mkdir(parents=True, exist_ok=True)
 metadata_dir = Path("./metadata")
 metadata_dir.mkdir(parents=True, exist_ok=True)
 
+import traceback
+
 def download_video(link, i):
     original_stdout = sys.stdout 
     sys.stdout = open(os.devnull, 'w') 
@@ -57,8 +59,22 @@ def download_video(link, i):
     except Exception as e:
         sys.stdout = original_stdout 
         print(f"Failed to download -> {link}")
+        if "itemInfo" in str(e):
+            pass
+        elif "Invalid URL" in str(e):
+            pass
+        else:
+            traceback.print_exc()
 
-with open('data.json') as f:
+if len(sys.argv) < 2:
+    print("Must supply a tiktok data file")
+    print("Example: python download.py data.json")
+    exit(1)
+
+data_file = sys.argv[1]
+print(f"Reading data found at {data_file}")
+
+with open(data_file) as f:
     data = json.load(f)
 
 favorites = data["Activity"]["Favorite Videos"]["FavoriteVideoList"]
@@ -66,10 +82,10 @@ favorites = data["Activity"]["Favorite Videos"]["FavoriteVideoList"]
 with Pool(15) as pool:
 
     args = []
-    for i, item in enumerate(favorites):
+    for i, favorite in enumerate(favorites):
+        link = favorite["Link"]
         print("#=========================================================")
-        print(item["Link"])
-        link = item["Link"]
+        print(link)
         args.append((link, i))
 
     pool.starmap(func=download_video, iterable=args)

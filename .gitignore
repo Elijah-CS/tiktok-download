@@ -1,0 +1,9 @@
+feed
+metadata
+venv
+data.json
+*json
+*mp4
+*csv
+*txt
+*zip
